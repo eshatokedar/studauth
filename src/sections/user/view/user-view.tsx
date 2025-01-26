@@ -374,10 +374,10 @@ export function StudentView() {
                 margin="normal"
               />
               <FormControl fullWidth margin="normal">
-                <InputLabel>Gender</InputLabel>
+              <InputLabel shrink={!!newStudent.gender}>Gender</InputLabel>
                 <select
                   name="gender"
-                  value={newStudent.gender}
+                  value={newStudent.gender || 'Gender'}
                   onChange={(e) => handleInputChange(e as any)}
                   style={{
                     padding: '10px',
@@ -387,7 +387,7 @@ export function StudentView() {
                     height: '55px',
                   }}
                 >
-                  <option value="gender" />
+                  <option value="Gender"/>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
