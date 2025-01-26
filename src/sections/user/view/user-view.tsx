@@ -119,7 +119,13 @@ export function StudentView() {
     if (!newStudent.phone || Number.isNaN(newStudent.phone)|| newStudent.phone.toString().length !== 10)
       newErrors.phone = 'Phone must be a 10-digit number';
     if (!newStudent.class) newErrors.class = 'Class is required';
+    if (!newStudent.section) newErrors.section = 'Section is required';
     if (!newStudent.rollNumber) newErrors.rollNumber = 'Roll number is required';
+    if (!newStudent.grade) {
+      newErrors.grade = 'Grade is required';
+    } else if (newStudent.grade.length !== 1) {
+      newErrors.grade = 'Grade must be a single character';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -485,8 +491,8 @@ export function StudentView() {
                 value={newStudent.grade}
                 onChange={handleInputChange}
                 margin="normal"
-                error={!!errors.name}
-            helperText={errors.name}
+                error={!!errors.grade}
+            helperText={errors.grade}
               />
 
               <Box mt={3} display="flex" justifyContent="flex-end">
