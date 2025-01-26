@@ -44,11 +44,11 @@ export function StudentView() {
   interface Student {
     id: string;
     name: string;
-    class: number | '';
+    class: string;
     section: string;
-    rollNumber: number | '';
+    rollNumber: string;
     email: string;
-    phone: number | '';
+    phone: number|'';
     address: string;
     guardianName: string;
     gender: string;
@@ -80,6 +80,8 @@ export function StudentView() {
     grade: '',
   });
 
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   // Fetch students from Firestore on component mount
   const fetchStudents = async () => {
     const querySnapshot = await getDocs(collection(db, 'students'));
@@ -109,6 +111,18 @@ export function StudentView() {
     }
     setPage(0);
   }, []);
+
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!newStudent.name.trim()) newErrors.name = 'Name is required';
+    if (!newStudent.email.trim() || !/\S+@\S+\.\S+/.test(newStudent.email)) newErrors.email = 'Invalid email';
+    if (!newStudent.phone || Number.isNaN(newStudent.phone)|| newStudent.phone.toString().length !== 10)
+      newErrors.phone = 'Phone must be a 10-digit number';
+    if (!newStudent.class) newErrors.class = 'Class is required';
+    if (!newStudent.rollNumber) newErrors.rollNumber = 'Roll number is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Filtered Data
   const filteredStudents = students.filter((student) =>
@@ -155,6 +169,7 @@ export function StudentView() {
   };
 
   const handleAddStudent = async () => {
+    if (!validate()) return;
     try {
       // Remove the id field from newStudent before adding it to Firestore
       const { id, ...studentData } = newStudent;
@@ -220,6 +235,7 @@ export function StudentView() {
             onChange={(event) => setFilterName(event.target.value)}
             size="small"
             fullWidth
+            
           />
         </Box>
 
@@ -304,6 +320,8 @@ export function StudentView() {
                 value={newStudent.name}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.name}
+            helperText={errors.name}
               />
               <TextField
                 fullWidth
@@ -312,6 +330,8 @@ export function StudentView() {
                 value={newStudent.class}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.class}
+            helperText={errors.class}
               />
               <TextField
                 fullWidth
@@ -320,6 +340,8 @@ export function StudentView() {
                 value={newStudent.section}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.section}
+            helperText={errors.section}
               />
               <TextField
                 fullWidth
@@ -328,6 +350,8 @@ export function StudentView() {
                 value={newStudent.rollNumber}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.rollNumber}
+            helperText={errors.rollNumber}
               />
                <TextField
                 fullWidth
@@ -340,6 +364,8 @@ export function StudentView() {
                 InputLabelProps={{
                   shrink: true, 
                 }}
+                error={!!errors.dateOfBirth}
+            helperText={errors.dateOfBirth}
               />
               <TextField
                 fullWidth
@@ -348,6 +374,8 @@ export function StudentView() {
                 value={newStudent.email}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.email}
+            helperText={errors.email}
               />
               <TextField
                 fullWidth
@@ -356,6 +384,8 @@ export function StudentView() {
                 value={newStudent.phone}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.phone}
+            helperText={errors.phone}
               />
               <TextField
                 fullWidth
@@ -364,6 +394,8 @@ export function StudentView() {
                 value={newStudent.address}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.address}
+            helperText={errors.address}
               />
               <TextField
                 fullWidth
@@ -372,6 +404,8 @@ export function StudentView() {
                 value={newStudent.guardianName}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.guardianName}
+            helperText={errors.guardianName}
               />
               <FormControl fullWidth margin="normal">
               <InputLabel shrink={!!newStudent.gender}>Gender</InputLabel>
@@ -451,6 +485,8 @@ export function StudentView() {
                 value={newStudent.grade}
                 onChange={handleInputChange}
                 margin="normal"
+                error={!!errors.name}
+            helperText={errors.name}
               />
 
               <Box mt={3} display="flex" justifyContent="flex-end">
