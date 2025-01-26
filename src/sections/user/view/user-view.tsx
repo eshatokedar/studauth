@@ -156,15 +156,25 @@ export function StudentView() {
 
   const handleAddStudent = async () => {
     try {
-      const docRef = await addDoc(collection(db, 'students'), newStudent);
+      // Remove the id field from newStudent before adding it to Firestore
       const { id, ...studentData } = newStudent;
+  
+      // Add the student to Firestore without the id field
+      const docRef = await addDoc(collection(db, 'students'), studentData);
+  
+      // Now docRef.id will contain the generated Firestore ID, so we can update the state
       const addedStudent: Student = { id: docRef.id, ...studentData };
+  
+      // Update the students state with the new student (including the generated id)
       setStudents((prev) => [...prev, addedStudent]);
+  
+      // Close the modal after adding
       handleCloseModal();
     } catch (error) {
       console.error('Error adding student: ', error);
     }
   };
+  
 
   const handleEditStudent = async () => {
     if (!selectedStudent) return;
