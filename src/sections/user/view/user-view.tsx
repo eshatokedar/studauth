@@ -83,16 +83,16 @@ export function StudentView() {
   // Fetch students from Firestore on component mount
   const fetchStudents = async () => {
     const querySnapshot = await getDocs(collection(db, 'students'));
-    const fetchedStudents = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return { id: doc.id, ...data } as Student;
+    const fetchedStudents = querySnapshot.docs.map((document) => {
+      const data = document.data();
+      return { id: document.id, ...data } as Student;
     });
     setStudents(fetchedStudents);
   };
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  });
 
   // Pagination Handlers
   const handleChangePage = useCallback((_: any, newPage: number) => {
@@ -357,14 +357,14 @@ export function StudentView() {
             height: '55px',
             }}
           >
-            <option value=""></option>
+            <option value=""/>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
           </FormControl>
 
-          <FormControl margin="normal">
+          {/* <FormControl margin="normal">
           <Typography>Hobbies</Typography>
           <Box display="flex" gap={2} sx={{ }}> 
             <label>
@@ -437,7 +437,7 @@ export function StudentView() {
             />
             I Agree
           </label>
-          </FormControl>
+          </FormControl> */}
           <Box mt={3} display="flex" justifyContent="flex-end">
           <Button onClick={handleCloseModal} sx={{ mr: 2 }}>
             Cancel
