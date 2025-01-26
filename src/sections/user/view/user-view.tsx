@@ -10,7 +10,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
-import  FormControl  from '@mui/material/FormControl';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import FormLabel from '@mui/material/FormLabel';
 import TableHead from '@mui/material/TableHead';
@@ -23,7 +23,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
-import { db } from 'src/firebase'; 
+import { db } from 'src/firebase';
 
 // Styles for Modal
 const modalStyle = {
@@ -44,16 +44,17 @@ export function StudentView() {
   interface Student {
     id: string;
     name: string;
-    class: number;
+    class: number | '';
     section: string;
-    rollNumber: number;
+    rollNumber: number | '';
     email: string;
-    phone: number;
+    phone: number | '';
     address: string;
     guardianName: string;
     gender: string;
     dateOfBirth: string;
     hobbies: string[];
+    grade: string;
   }
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -66,16 +67,17 @@ export function StudentView() {
   const [newStudent, setNewStudent] = useState<Student>({
     id: '',
     name: '',
-    class: 0,
+    class: '',
     section: '',
-    rollNumber: 0,
+    rollNumber: '',
     email: '',
-    phone: 0,
+    phone: '',
     address: '',
     guardianName: '',
     gender: '',
     dateOfBirth: '',
     hobbies: [],
+    grade: '',
   });
 
   // Fetch students from Firestore on component mount
@@ -103,12 +105,12 @@ export function StudentView() {
     if ([10, 25, 50, 100].includes(value)) {
       setRowsPerPage(value);
     } else {
-      setRowsPerPage(10);  // default to 10
+      setRowsPerPage(10); // default to 10
     }
     setPage(0);
   }, []);
 
-  // Filtered Data  
+  // Filtered Data
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(filterName.toLowerCase())
   );
@@ -125,16 +127,17 @@ export function StudentView() {
       student || {
         id: '',
         name: '',
-        class: 0,
+        class: '',
         section: '',
-        rollNumber: 0,
+        rollNumber: '',
         email: '',
-        phone: 0,
+        phone: '',
         address: '',
         guardianName: '',
         gender: '',
         dateOfBirth: '',
         hobbies: [],
+        grade: '',
       }
     );
     setOpenModal(true);
@@ -144,7 +147,6 @@ export function StudentView() {
     setOpenModal(false);
     setModalType(null);
     setSelectedStudent(null);
-    
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +173,9 @@ export function StudentView() {
       const { id, ...studentData } = newStudent;
       await updateDoc(studentDoc, studentData);
       setStudents((prev) =>
-        prev.map((student) => (student.id === selectedStudent.id ? { ...newStudent, id: student.id } : student))
+        prev.map((student) =>
+          student.id === selectedStudent.id ? { ...newStudent, id: student.id } : student
+        )
       );
       handleCloseModal();
     } catch (error) {
@@ -191,263 +195,269 @@ export function StudentView() {
   return (
     <Box padding={3}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-      <Typography variant="h4">Students</Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => handleOpenModal('add')}
-      >
-        Add Student
-      </Button>
+        <Typography variant="h4">Students</Typography>
+        <Button variant="contained" color="primary" onClick={() => handleOpenModal('add')}>
+          Add Student
+        </Button>
       </Box>
 
       <Card>
-      <Box padding={2}>
-        <TextField
-        label="Search Students"
-        variant="outlined"
-        value={filterName}
-        onChange={(event) => setFilterName(event.target.value)}
-        size="small"
-        fullWidth
+        <Box padding={2}>
+          <TextField
+            label="Search Students"
+            variant="outlined"
+            value={filterName}
+            onChange={(event) => setFilterName(event.target.value)}
+            size="small"
+            fullWidth
+          />
+        </Box>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Class</TableCell>
+                <TableCell>Section</TableCell>
+                <TableCell>Roll Number</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredStudents
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>{student.id}</TableCell>
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.class}</TableCell>
+                    <TableCell>{student.section}</TableCell>
+                    <TableCell>{student.rollNumber}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleOpenModal('view', student)}>
+                        <VisibilityIcon />
+                      </IconButton>
+                      <IconButton onClick={() => handleOpenModal('edit', student)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton onClick={() => handleDeleteStudent(student.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              {emptyRows > 0 && (
+                <TableRow style={{ height: 53 * emptyRows }}>
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          component="div"
+          count={filteredStudents.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[10, 25, 50, 100]}
         />
-      </Box>
-
-      <TableContainer>
-        <Table>
-        <TableHead>
-          <TableRow>
-          <TableCell>ID</TableCell>
-          <TableCell>Name</TableCell>
-          <TableCell>Class</TableCell>
-          <TableCell>Section</TableCell>
-          <TableCell>Roll Number</TableCell>
-          <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filteredStudents
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-          .map((student) => (
-            <TableRow key={student.id}>
-            <TableCell>{student.id}</TableCell>
-            <TableCell>{student.name}</TableCell>
-            <TableCell>{student.class}</TableCell>
-            <TableCell>{student.section}</TableCell>
-            <TableCell>{student.rollNumber}</TableCell>
-            <TableCell>
-              <IconButton onClick={() => handleOpenModal('view', student)}>
-              <VisibilityIcon />
-              </IconButton>
-              <IconButton onClick={() => handleOpenModal('edit', student)}>
-              <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => handleDeleteStudent(student.id)}>
-              <DeleteIcon />
-              </IconButton>
-            </TableCell>
-            </TableRow>
-          ))}
-          {emptyRows > 0 && (
-          <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={6} />
-          </TableRow>
-          )}
-        </TableBody>
-        </Table>
-      </TableContainer>
-
-      <TablePagination
-        component="div"
-        count={filteredStudents.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[10, 25, 50, 100]} 
-      />
       </Card>
 
       {/* Modal */}
       <Modal open={openModal} onClose={handleCloseModal}>
-      <Box sx={modalStyle}>
-        {modalType === 'view' && selectedStudent && (
-        <Box>
-          <Typography variant="h6">Student Details</Typography>
-          {Object.entries(selectedStudent).map(([key, value]) => (
-          <Typography key={key}>
-            <strong>{key}:</strong> {value}
-          </Typography>
-          ))}
+        <Box sx={modalStyle}>
+          {modalType === 'view' && selectedStudent && (
+            <Box>
+              <Typography variant="h6">Student Details</Typography>
+              {Object.entries(selectedStudent).map(([key, value]) => (
+                <Typography key={key}>
+                  <strong>{key}:</strong> {value}
+                </Typography>
+              ))}
+            </Box>
+          )}
+
+          {(modalType === 'add' || modalType === 'edit') && (
+            <Box>
+              <Typography variant="h6">
+                {modalType === 'add' ? 'Add Student' : 'Edit Student'}
+              </Typography>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={newStudent.name}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Class"
+                name="class"
+                value={newStudent.class}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Section"
+                name="section"
+                value={newStudent.section}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Roll Number"
+                name="rollNumber"
+                value={newStudent.rollNumber}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+               <TextField
+                fullWidth
+                label="Date of Birth"
+                name="dateOfBirth"
+                type="date" 
+                value={newStudent.dateOfBirth}
+                onChange={handleInputChange}
+                margin="normal"
+                InputLabelProps={{
+                  shrink: true, 
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                value={newStudent.email}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={newStudent.phone}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Address"
+                name="address"
+                value={newStudent.address}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Guardian Name"
+                name="guardianName"
+                value={newStudent.guardianName}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Gender</InputLabel>
+                <select
+                  name="gender"
+                  value={newStudent.gender}
+                  onChange={(e) => handleInputChange(e as any)}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '8px',
+                    borderColor: '#ccc',
+                    width: '100%',
+                    height: '55px',
+                  }}
+                >
+                  <option value="gender" />
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </FormControl>
+
+              <FormControl margin="normal">
+                <FormLabel component="legend">Hobbies</FormLabel>
+                <Box display="flex" gap={2} sx={{ mt: 1, mb: 2, color: 'text.secondary' }} mb={4}>
+                  <input
+                    type="checkbox"
+                    name="hobbies"
+                    value="Sports"
+                    checked={newStudent.hobbies.includes('Sports')}
+                    onChange={(e) =>
+                      setNewStudent((prev) => ({
+                        ...prev,
+                        hobbies: e.target.checked
+                          ? [...prev.hobbies, e.target.value]
+                          : prev.hobbies.filter((hobby) => hobby !== e.target.value),
+                      }))
+                    }
+                  />
+                  Sports
+                  <input
+                    type="checkbox"
+                    name="hobbies"
+                    value="Music"
+                    checked={newStudent.hobbies.includes('Music')}
+                    onChange={(e) =>
+                      setNewStudent((prev) => ({
+                        ...prev,
+                        hobbies: e.target.checked
+                          ? [...prev.hobbies, e.target.value]
+                          : prev.hobbies.filter((hobby) => hobby !== e.target.value),
+                      }))
+                    }
+                  />
+                  Music
+                  <input
+                    type="checkbox"
+                    name="hobbies"
+                    value="Reading"
+                    checked={newStudent.hobbies.includes('Reading')}
+                    onChange={(e) =>
+                      setNewStudent((prev) => ({
+                        ...prev,
+                        hobbies: e.target.checked
+                          ? [...prev.hobbies, e.target.value]
+                          : prev.hobbies.filter((hobby) => hobby !== e.target.value),
+                      }))
+                    }
+                  />
+                  Reading
+                </Box>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Grade"
+                name="grade"
+                value={newStudent.grade}
+                onChange={handleInputChange}
+                margin="normal"
+              />
+
+              <Box mt={3} display="flex" justifyContent="flex-end">
+                <Button onClick={handleCloseModal} sx={{ mr: 2 }}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={modalType === 'add' ? handleAddStudent : handleEditStudent}
+                >
+                  {modalType === 'add' ? 'Add' : 'Save'}
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
-        )}
-
-        {(modalType === 'add' || modalType === 'edit') && (
-        <Box>
-          <Typography variant="h6">{modalType === 'add' ? 'Add Student' : 'Edit Student'}</Typography>
-          <TextField
-          fullWidth
-          label="ID"
-          name="id"
-          value={newStudent.id}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Name"
-          name="name"
-          value={newStudent.name}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Class"
-          name="class"
-          value={newStudent.class}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Section"
-          name="section"
-          value={newStudent.section}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Roll Number"
-          name="rollNumber"
-          value={newStudent.rollNumber}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Email"
-          name="email"
-          value={newStudent.email}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Phone"
-          name="phone"
-          value={newStudent.phone}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Address"
-          name="address"
-          value={newStudent.address}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <TextField
-          fullWidth
-          label="Guardian Name"
-          name="guardianName"
-          value={newStudent.guardianName}
-          onChange={handleInputChange}
-          margin="normal"
-          />
-          <FormControl fullWidth margin="normal">
-          <InputLabel>Gender</InputLabel>
-          <select
-            name="gender"
-            value={newStudent.gender}
-            onChange={(e) => handleInputChange(e as any)}
-            style={{
-            padding: '10px',
-            borderRadius: '8px',
-            borderColor: '#ccc',
-            width: '100%',
-            height: '55px',
-            }}
-          >
-            <option value="gender"/>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-          </FormControl>
-
-          <FormControl margin="normal">
-          <FormLabel component="legend">Hobbies</FormLabel>
-          <Box display="flex" gap={2} sx={{ mt: 1,mb: 2, color: 'text.secondary' }} mb={4}> 
-           
-            <input
-              type="checkbox"
-              name="hobbies"
-              value="Sports"
-              checked={newStudent.hobbies.includes('Sports')}
-              onChange={(e) =>
-              setNewStudent((prev) => ({
-                ...prev,
-                hobbies: e.target.checked
-                ? [...prev.hobbies, e.target.value]
-                : prev.hobbies.filter((hobby) => hobby !== e.target.value),
-              }))
-              }
-            />
-            Sports
-         
-            <input
-              type="checkbox"
-              name="hobbies"
-              value="Music"
-              checked={newStudent.hobbies.includes('Music')}
-              onChange={(e) =>
-              setNewStudent((prev) => ({
-                ...prev,
-                hobbies: e.target.checked
-                ? [...prev.hobbies, e.target.value]
-                : prev.hobbies.filter((hobby) => hobby !== e.target.value),
-              }))
-              }
-            />
-            Music
-       
-            <input
-              type="checkbox"
-              name="hobbies"
-              value="Reading"
-              checked={newStudent.hobbies.includes('Reading')}
-              onChange={(e) =>
-              setNewStudent((prev) => ({
-                ...prev,
-                hobbies: e.target.checked
-                ? [...prev.hobbies, e.target.value]
-                : prev.hobbies.filter((hobby) => hobby !== e.target.value),
-              }))
-              }
-            />
-            Reading
-         
-          </Box>
-          </FormControl>
-
-          <Box mt={3} display="flex" justifyContent="flex-end">
-          <Button onClick={handleCloseModal} sx={{ mr: 2 }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={modalType === 'add' ? handleAddStudent : handleEditStudent}
-          >
-            {modalType === 'add' ? 'Add' : 'Save'}
-          </Button>
-          </Box>
-        </Box>
-        )}
-      </Box>
       </Modal>
     </Box>
-  );      
+  );
 }
