@@ -12,7 +12,7 @@ import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import  FormControl  from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import RadioGroup from '@mui/material';
+import FormLabel from '@mui/material/FormLabel';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -54,7 +54,6 @@ export function StudentView() {
     gender: string;
     dateOfBirth: string;
     hobbies: string[];
-    agreeToTerms: boolean;
   }
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -77,7 +76,6 @@ export function StudentView() {
     gender: '',
     dateOfBirth: '',
     hobbies: [],
-    agreeToTerms: false,
   });
 
   // Fetch students from Firestore on component mount
@@ -101,10 +99,16 @@ export function StudentView() {
 
   const handleChangeRowsPerPage = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
+    const value = parseInt(event.target.value, 10);
+    if ([10, 25, 50, 100].includes(value)) {
+      setRowsPerPage(value);
+    } else {
+      setRowsPerPage(10);  // default to 10
+    }
     setPage(0);
   }, []);
 
-  // Filtered Data
+  // Filtered Data  
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(filterName.toLowerCase())
   );
@@ -113,6 +117,7 @@ export function StudentView() {
 
   // Add/Edit Handlers
   const handleOpenModal = (type: 'add' | 'view' | 'edit', student: Student | null = null) => {
+    console.log('Selected Student:', student); // Check the student object for ID
     setModalType(type);
     if (student) setSelectedStudent(student);
     else setSelectedStudent(null);
@@ -130,7 +135,6 @@ export function StudentView() {
         gender: '',
         dateOfBirth: '',
         hobbies: [],
-        agreeToTerms: false,
       }
     );
     setOpenModal(true);
@@ -140,6 +144,7 @@ export function StudentView() {
     setOpenModal(false);
     setModalType(null);
     setSelectedStudent(null);
+    
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,6 +264,7 @@ export function StudentView() {
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[10, 25, 50, 100]} 
       />
       </Card>
 
@@ -279,6 +285,14 @@ export function StudentView() {
         {(modalType === 'add' || modalType === 'edit') && (
         <Box>
           <Typography variant="h6">{modalType === 'add' ? 'Add Student' : 'Edit Student'}</Typography>
+          <TextField
+          fullWidth
+          label="ID"
+          name="id"
+          value={newStudent.id}
+          onChange={handleInputChange}
+          margin="normal"
+          />
           <TextField
           fullWidth
           label="Name"
@@ -357,17 +371,17 @@ export function StudentView() {
             height: '55px',
             }}
           >
-            <option value=""/>
+            <option value="gender"/>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
           </FormControl>
 
-          {/* <FormControl margin="normal">
-          <Typography>Hobbies</Typography>
-          <Box display="flex" gap={2} sx={{ }}> 
-            <label>
+          <FormControl margin="normal">
+          <FormLabel component="legend">Hobbies</FormLabel>
+          <Box display="flex" gap={2} sx={{ mt: 1,mb: 2, color: 'text.secondary' }} mb={4}> 
+           
             <input
               type="checkbox"
               name="hobbies"
@@ -383,8 +397,7 @@ export function StudentView() {
               }
             />
             Sports
-            </label>
-            <label>
+         
             <input
               type="checkbox"
               name="hobbies"
@@ -400,8 +413,7 @@ export function StudentView() {
               }
             />
             Music
-            </label>
-            <label>
+       
             <input
               type="checkbox"
               name="hobbies"
@@ -417,27 +429,10 @@ export function StudentView() {
               }
             />
             Reading
-            </label>
+         
           </Box>
           </FormControl>
 
-          <FormControl margin="normal">
-          <Typography>Agree to Terms</Typography>
-          <label>
-            <input
-            type="checkbox"
-            name="agreeToTerms"
-            checked={newStudent.agreeToTerms}
-            onChange={(e) =>
-              setNewStudent((prev) => ({
-              ...prev,
-              agreeToTerms: e.target.checked,
-              }))
-            }
-            />
-            I Agree
-          </label>
-          </FormControl> */}
           <Box mt={3} display="flex" justifyContent="flex-end">
           <Button onClick={handleCloseModal} sx={{ mr: 2 }}>
             Cancel

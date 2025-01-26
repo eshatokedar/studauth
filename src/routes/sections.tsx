@@ -38,7 +38,7 @@ export function Router() {
         </DashboardLayout>
       ),
       children: [
-        { element: <UserPage />, index: true },
+        {element:<UserPage/>, index: true },
       ],
     },
     {
@@ -48,6 +48,10 @@ export function Router() {
           <SignInPage />
         </AuthLayout>
       ),
+    },
+    {
+      path: 'users',
+      element: <UserPage />,
     },
     {
       path: '404',

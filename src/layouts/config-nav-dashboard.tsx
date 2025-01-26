@@ -1,6 +1,7 @@
 import path from 'path';
 import { useNavigate } from 'react-router-dom';
 import { SvgColor } from 'src/components/svg-color';
+import { getAuth, signOut } from 'firebase/auth';
 
 // ----------------------------------------------------------------------
 
@@ -9,10 +10,17 @@ const icon = (name: string) => (
 );
 
 const handleLogout = () => {
-  console.log('User logged out');
-  sessionStorage.clear();
-  alert('You have been logged out');
-  window.location.href = '/log-in';
+  const auth = getAuth();
+  signOut(auth)
+    .then(() => {
+      console.log('User logged out');
+      sessionStorage.clear();
+      alert('You have been logged out');
+      window.location.href = '/log-in';
+    })
+    .catch((error) => {
+      console.error('Error logging out: ', error);
+    });
 };
 
 export const navData = [
@@ -20,16 +28,10 @@ export const navData = [
     title: 'Students',
     path: '/',
     icon: icon('ic-user'),
-  },
-  {
-    title: 'Log in',
-    path: '/log-in',
-    icon: icon('ic-lock'),
-  },      
+  },     
   {
     title: 'Log out',
-    icon: icon('ic-logout'),
-    path: '/',
-    action: handleLogout,
+    icon: icon('ic-lock'),
+    path: '/log-in',
   },
 ];
